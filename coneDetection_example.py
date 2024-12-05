@@ -8,7 +8,7 @@ img_depth = cv2.imread("av_depthset/av_track_depth13.png", cv2.IMREAD_GRAYSCALE)
 
 start_time = time.perf_counter()
 
-img_cones, val_error, img_hxs_blue, img_hxs_yellow = depth_coneDectectionA(img, img_depth) # , img_depth
+img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = depth_coneDectectionA(img, img_depth) # , img_depth
 
 end_time = time.perf_counter()
 

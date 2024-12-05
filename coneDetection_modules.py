@@ -13,21 +13,16 @@ def cone_pointProcessing(img):
     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) # Convert BGR image to HSV
 
     # Do thresholding using hsv-image
-    _, hue_thresh = cv2.threshold(img_hsv[:,:,0],80,255,cv2.THRESH_BINARY) # H(x,y) > 80
-    _, saturation_thresh = cv2.threshold(img_hsv[:,:,1],200,255,cv2.THRESH_BINARY) # S(x,y) > 200
+    hue_blue = cv2.inRange(img_hsv[:,:,0],90, 120,cv2.THRESH_BINARY) # H(x,y) > 80
+    hue_yellow = cv2.inRange(img_hsv[:,:,0], 15, 45, cv2.THRESH_BINARY) # H(x,y) > 80
+    hue_orange = cv2.inRange(img_hsv[:,:,0], 0, 15, cv2.THRESH_BINARY) # H(x,y) > 80
+    saturation_thresh = cv2.inRange(img_hsv[:,:,1],200,255,cv2.THRESH_BINARY) # S(x,y) > 200
 
-    img_hANDANDs = cv2.bitwise_and(hue_thresh, saturation_thresh) # Bitwise AND operation # hue_thresh && sat_thresh
+    img_cones_blue = cv2.bitwise_and(hue_blue, saturation_thresh)
+    img_cones_yellow = cv2.bitwise_and(hue_yellow, saturation_thresh)
+    img_cones_orange = cv2.bitwise_and(hue_orange, saturation_thresh)
 
-    # Obtain blue and yellow cones as two separate BLOBs using the equation:
-    # img_hxs(x,y) = img_hANDANDs(x,y) * 0.5 + saturation_thresh(x,y) * 0.5
-    img_hxs = cv2.addWeighted(img_hANDANDs, 0.5, saturation_thresh, 0.5, 0) 
-
-    # Using thresholding, separate blue and yellow cones into two separate BLOB images
-    #_, img_hxs_blue = cv2.threshold(img_hxs,254,255,cv2.THRESH_BINARY)
-    img_cones_blue = cv2.inRange(img_hxs, 254, 255,cv2.THRESH_BINARY) # pixel == 255
-    img_cones_yellow = cv2.inRange(img_hxs, 127, 129,cv2.THRESH_BINARY) # pixel == 128
-
-    return img_cones_blue, img_cones_yellow
+    return img_cones_blue, img_cones_yellow, img_cones_orange
 
 """
 Get largest BLOB using grassfire-algorithm
@@ -72,11 +67,11 @@ def cone_COM(img_cone, colour):
 
         # Blue cones are presumed to be to the left (first column)
         if colour == (255, 0, 0):
-            cx = 0
+            cx = -len(img_cone[0])//2
             
         # Yellow cones are presumed to be to the right (law column)
         else:
-            cx = len(img_cone[0])
+            cx = int(len(img_cone[0]) * 1.5)
         return img_cone, cx
     
     # Get center of mass of only x-axis (y-axis is irrelevant)
@@ -89,7 +84,7 @@ def cone_COM(img_cone, colour):
 
     # Convert binary image to RGB image (only for visual aesthetics)
     img_cone = cv2.cvtColor(img_cone, cv2.COLOR_GRAY2BGR)
-    cv2.line(img_cone, (cx, 0), (cx, img_cone.shape[1]), colour, 5) # Draw line
+    cv2.line(img_cone, (cx, 0), (cx, img_cone.shape[1]), colour, 8) # Draw line
 
     return img_cone, cx
 
@@ -102,8 +97,19 @@ def cone_rectangle_center(img_cone, colour):
     x_end = x_start + width
     y_end = y_start + height
 
+    # Blue
+    if x_end == 0 and y_end == 0 and colour == (255, 0, 0):
+        x_start = int(len(img_cone[0]) * 1.5)
+        x_end = int(len(img_cone[0]) * 1.5)
+    
+    # Yellow
+    if x_end == 0 and y_end == 0 and colour == (0, 255, 255):
+        x_start = -len(img_cone[0])//2
+        x_end = -len(img_cone[0])//2
+
+
     # Set thickness of drawn lines
-    thickness = 1
+    thickness = 8
 
     # Convert binary image to RGB image (only for visual aesthetics)
     img_cone = cv2.cvtColor(img_cone, cv2.COLOR_GRAY2BGR)
@@ -123,8 +129,18 @@ def cone_rectangle_outerBound(img_cone, colour):
     x_end = x_start + width
     y_end = y_start + height
 
+    # Blue
+    if x_end == 0 and y_end == 0 and colour == (255, 0, 0):
+        x_start = int(len(img_cone[0]) * 1.5)
+        x_end = int(len(img_cone[0]) * 1.5)
+    
+    # Yellow
+    if x_end == 0 and y_end == 0 and colour == (0, 255, 255):
+        x_start = -len(img_cone[0])//2
+        x_end = -len(img_cone[0])//2
+
     # Set thickness of drawn lines
-    thickness = 1
+    thickness = 8
 
     # Convert binary image to RGB image (only for visual aesthetics)
     img_cone = cv2.cvtColor(img_cone, cv2.COLOR_GRAY2BGR)
@@ -151,11 +167,11 @@ def get_cone_error(img_cone, x_blue, x_yellow):
     target = img_cone.shape[1]//2
 
     # Draw line in center of image depicting target
-    cv2.line(img_cone, (target, 0), (target, img_cone.shape[1]), (0, 0, 255)) # Red line
+    cv2.line(img_cone, (target, 0), (target, img_cone.shape[1]), (0, 0, 255), 8) # Red line
 
     # Draw line in center of cones, using x_yellow and x_blue, 
     x_pos = (x_yellow + x_blue) // 2
-    cv2.line(img_cone, (x_pos, 0), (x_pos, img_cone.shape[1]), (255, 0, 255)) # Cyan line
+    cv2.line(img_cone, (x_pos, 0), (x_pos, img_cone.shape[1]), (255, 0, 255), 8) # Cyan line
 
     # Get error
     val_error = target-x_pos
@@ -166,14 +182,15 @@ def get_cone_error(img_cone, x_blue, x_yellow):
 RGB Method A
 """
 def RGB_coneDectectionA(img, img_depth=0):
-    img_hxs_blue, img_hxs_yellow = cone_pointProcessing(img)
+    img_hxs_blue, img_hxs_yellow, img_hxs_orange = cone_pointProcessing(img)
+
+    kernel = np.ones((15,15),np.uint8)
+    img_hxs_blue = cv2.morphologyEx(img_hxs_blue, cv2.MORPH_OPEN, kernel)
+    img_hxs_yellow = cv2.morphologyEx(img_hxs_yellow, cv2.MORPH_OPEN, kernel)
+    img_hxs_orange = cv2.morphologyEx(img_hxs_orange, cv2.MORPH_OPEN, kernel)
 
     img_hxs_blue_largest = get_largest_BLOB(img_hxs_blue)
     img_hxs_yellow_largest = get_largest_BLOB(img_hxs_yellow)
-
-    kernel = np.ones((15,15),np.uint8)
-    img_hxs_blue_largest = cv2.morphologyEx(img_hxs_blue_largest, cv2.MORPH_OPEN, kernel)
-    img_hxs_yellow_largest = cv2.morphologyEx(img_hxs_yellow_largest, cv2.MORPH_OPEN, kernel)
 
     img_hxs_blue_largest, x_blue = cone_rectangle_outerBound(img_hxs_blue_largest, (255, 0, 0))
     img_hxs_yellow_largest, x_yellow = cone_rectangle_outerBound(img_hxs_yellow_largest, (0, 255, 255))
@@ -182,20 +199,21 @@ def RGB_coneDectectionA(img, img_depth=0):
 
     img_cones, val_error = get_cone_error(img_cones, x_blue, x_yellow)
 
-    return img_cones, val_error, img_hxs_blue, img_hxs_yellow
+    return img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange
 
 """
 RGB Method B
 """
 def RGB_coneDectectionB(img, img_depth=0):
-    img_hxs_blue, img_hxs_yellow = cone_pointProcessing(img)
+    img_hxs_blue, img_hxs_yellow, img_hxs_orange = cone_pointProcessing(img)
+
+    kernel = np.ones((15,15),np.uint8)
+    img_hxs_blue = cv2.morphologyEx(img_hxs_blue, cv2.MORPH_OPEN, kernel)
+    img_hxs_yellow = cv2.morphologyEx(img_hxs_yellow, cv2.MORPH_OPEN, kernel)
+    img_hxs_orange = cv2.morphologyEx(img_hxs_orange, cv2.MORPH_OPEN, kernel)
 
     img_hxs_blue_largest = get_largest_BLOB(img_hxs_blue)
     img_hxs_yellow_largest = get_largest_BLOB(img_hxs_yellow)
-
-    kernel = np.ones((15,15),np.uint8)
-    img_hxs_blue_largest = cv2.morphologyEx(img_hxs_blue_largest, cv2.MORPH_OPEN, kernel)
-    img_hxs_yellow_largest = cv2.morphologyEx(img_hxs_yellow_largest, cv2.MORPH_OPEN, kernel)
 
     img_hxs_blue_largest, x_blue = cone_rectangle_center(img_hxs_blue_largest, (255, 0, 0))
     img_hxs_yellow_largest, x_yellow = cone_rectangle_center(img_hxs_yellow_largest, (0, 255, 255))
@@ -204,20 +222,21 @@ def RGB_coneDectectionB(img, img_depth=0):
 
     img_cones, val_error = get_cone_error(img_cones, x_blue, x_yellow)
 
-    return img_cones, val_error, img_hxs_blue, img_hxs_yellow
+    return img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange
 
 """
 RGB Method C
 """
 def RGB_coneDectectionC(img, img_depth=0):
-    img_hxs_blue, img_hxs_yellow = cone_pointProcessing(img)
-
-    img_hxs_blue = get_largest_BLOB(img_hxs_blue)
-    img_hxs_yellow = get_largest_BLOB(img_hxs_yellow)
+    img_hxs_blue, img_hxs_yellow, img_hxs_orange = cone_pointProcessing(img)
 
     kernel = np.ones((15,15),np.uint8)
     img_hxs_blue = cv2.morphologyEx(img_hxs_blue, cv2.MORPH_OPEN, kernel)
     img_hxs_yellow = cv2.morphologyEx(img_hxs_yellow, cv2.MORPH_OPEN, kernel)
+    img_hxs_orange = cv2.morphologyEx(img_hxs_orange, cv2.MORPH_OPEN, kernel)
+
+    img_hxs_blue_largest = get_largest_BLOB(img_hxs_blue)
+    img_hxs_yellow_largest = get_largest_BLOB(img_hxs_yellow)
 
     img_hxs_blue, x_blue = cone_COM(img_hxs_blue, (255, 0, 0))
     img_hxs_yellow, x_yellow = cone_COM(img_hxs_yellow, (0, 255, 255))
@@ -226,16 +245,16 @@ def RGB_coneDectectionC(img, img_depth=0):
 
     img_cones, val_error = get_cone_error(img_cones, x_blue, x_yellow)
 
-    return img_cones, val_error, img_hxs_blue, img_hxs_yellow
+    return img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange
 
 """
 Depth Method A
 """
 def depth_coneDectectionA(img, img_depth):
-    img_hxs_blue, img_hxs_yellow = cone_pointProcessing(img)
+    img_hxs_blue, img_hxs_yellow, img_hxs_orange = cone_pointProcessing(img)
 
     #img_depth_thresh = np.where(img_depth>100, 255, 0).astype(np.uint8)
-    img_depth_thresh, _ = cv2.threshold(img_depth, 100, 255, cv2.THRESH_BINARY)
+    img_depth_thresh, _ = cv2.threshold(img_depth, 75, 255, cv2.THRESH_BINARY)
     img_hxs_blue = cv2.bitwise_and(img_hxs_blue, img_depth_thresh)
     img_hxs_yellow = cv2.bitwise_and(img_hxs_yellow, img_depth_thresh)
 
@@ -253,15 +272,16 @@ def depth_coneDectectionA(img, img_depth):
 
     img_cones, val_error = get_cone_error(img_cones, x_blue, x_yellow)
 
-    return img_cones, val_error, img_hxs_blue, img_hxs_yellow
+    return img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange
 
 """
 Depth Method B
 """
 def depth_coneDectectionB(img, img_depth):
-    img_hxs_blue, img_hxs_yellow = cone_pointProcessing(img)
+    img_hxs_blue, img_hxs_yellow, img_hxs_orange = cone_pointProcessing(img)
 
-    img_depth_thresh, _ = cv2.threshold(img_depth, 100, 255, cv2.THRESH_BINARY)
+    #img_depth_thresh = np.where(img_depth>100, 255, 0).astype(np.uint8)
+    img_depth_thresh, _ = cv2.threshold(img_depth, 75, 255, cv2.THRESH_BINARY)
     img_hxs_blue = cv2.bitwise_and(img_hxs_blue, img_depth_thresh)
     img_hxs_yellow = cv2.bitwise_and(img_hxs_yellow, img_depth_thresh)
 
@@ -279,15 +299,16 @@ def depth_coneDectectionB(img, img_depth):
 
     img_cones, val_error = get_cone_error(img_cones, x_blue, x_yellow)
 
-    return img_cones, val_error, img_hxs_blue, img_hxs_yellow
+    return img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange
 
 """
 Depth Method C
 """
 def depth_coneDectectionC(img, img_depth):
-    img_hxs_blue, img_hxs_yellow = cone_pointProcessing(img)
+    img_hxs_blue, img_hxs_yellow, img_hxs_orange = cone_pointProcessing(img)
 
-    img_depth_thresh, _ = cv2.threshold(img_depth, 100, 255, cv2.THRESH_BINARY)
+    #img_depth_thresh = np.where(img_depth>100, 255, 0).astype(np.uint8)
+    img_depth_thresh, _ = cv2.threshold(img_depth, 75, 255, cv2.THRESH_BINARY)
     img_hxs_blue = cv2.bitwise_and(img_hxs_blue, img_depth_thresh)
     img_hxs_yellow = cv2.bitwise_and(img_hxs_yellow, img_depth_thresh)
 
@@ -305,4 +326,4 @@ def depth_coneDectectionC(img, img_depth):
 
     img_cones, val_error = get_cone_error(img_cones, x_blue, x_yellow)
 
-    return img_cones, val_error, img_hxs_blue, img_hxs_yellow
+    return img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange
