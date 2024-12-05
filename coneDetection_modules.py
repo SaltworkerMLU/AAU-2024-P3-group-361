@@ -257,10 +257,12 @@ def depth_coneDectectionA(img, img_depth):
     img_depth_thresh, _ = cv2.threshold(img_depth, 75, 255, cv2.THRESH_BINARY)
     img_hxs_blue = cv2.bitwise_and(img_hxs_blue, img_depth_thresh)
     img_hxs_yellow = cv2.bitwise_and(img_hxs_yellow, img_depth_thresh)
+    img_hxs_orange = cv2.bitwise_and(img_hxs_orange, img_depth_thresh)
 
     kernel = np.ones((15,15),np.uint8)
     img_hxs_blue = cv2.morphologyEx(img_hxs_blue, cv2.MORPH_OPEN, kernel)
     img_hxs_yellow = cv2.morphologyEx(img_hxs_yellow, cv2.MORPH_OPEN, kernel)
+    img_hxs_orange = cv2.morphologyEx(img_hxs_orange, cv2.MORPH_OPEN, kernel)
 
     #img_hxs_blue = get_largest_BLOB(img_hxs_blue)
     #img_hxs_yellow = get_largest_BLOB(img_hxs_yellow)
@@ -284,10 +286,12 @@ def depth_coneDectectionB(img, img_depth):
     img_depth_thresh, _ = cv2.threshold(img_depth, 75, 255, cv2.THRESH_BINARY)
     img_hxs_blue = cv2.bitwise_and(img_hxs_blue, img_depth_thresh)
     img_hxs_yellow = cv2.bitwise_and(img_hxs_yellow, img_depth_thresh)
+    img_hxs_orange = cv2.bitwise_and(img_hxs_orange, img_depth_thresh)
 
     kernel = np.ones((15,15),np.uint8)
     img_hxs_blue = cv2.morphologyEx(img_hxs_blue, cv2.MORPH_OPEN, kernel)
     img_hxs_yellow = cv2.morphologyEx(img_hxs_yellow, cv2.MORPH_OPEN, kernel)
+    img_hxs_orange = cv2.morphologyEx(img_hxs_orange, cv2.MORPH_OPEN, kernel)
 
     #img_hxs_blue = get_largest_BLOB(img_hxs_blue)
     #img_hxs_yellow = get_largest_BLOB(img_hxs_yellow)
@@ -311,10 +315,12 @@ def depth_coneDectectionC(img, img_depth):
     img_depth_thresh, _ = cv2.threshold(img_depth, 75, 255, cv2.THRESH_BINARY)
     img_hxs_blue = cv2.bitwise_and(img_hxs_blue, img_depth_thresh)
     img_hxs_yellow = cv2.bitwise_and(img_hxs_yellow, img_depth_thresh)
+    img_hxs_orange = cv2.bitwise_and(img_hxs_orange, img_depth_thresh)
 
     kernel = np.ones((15,15),np.uint8)
     img_hxs_blue = cv2.morphologyEx(img_hxs_blue, cv2.MORPH_OPEN, kernel)
     img_hxs_yellow = cv2.morphologyEx(img_hxs_yellow, cv2.MORPH_OPEN, kernel)
+    img_hxs_orange = cv2.morphologyEx(img_hxs_orange, cv2.MORPH_OPEN, kernel)
 
     #img_hxs_blue = get_largest_BLOB(img_hxs_blue)
     #img_hxs_yellow = get_largest_BLOB(img_hxs_yellow)

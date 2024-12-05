@@ -3,10 +3,10 @@ import numpy as np
 import cv2
 import time
 from coneDetection_modules import *
-#from gpiozero import gpio
+from gpiozero import gpio
 
-#servo = gpio.Servo(4)
-#motor = gpio.Motor(12, 13)
+servo = gpio.Servo(4)
+motor = gpio.Motor(12, 13)
 
 # Create a pipeline
 pipeline = rs.pipeline()
@@ -45,18 +45,18 @@ try:
         Depth_image_normalized = np.array((Depth_image_scaled / 5000.0 * 255).astype(np.uint8))
         Depth_image_normalized = Depth_image_normalized[Depth_image_normalized.shape[0]//2:,:]
 
-        img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = depth_coneDectectionA(img_RGB, Depth_image_normalized)
+        img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = RGB_coneDectectionA(img_RGB, Depth_image_normalized)
 
-        #servo.angle(val_error * 60/(img_RGB.shape[1]/2))
-        #motor.forward(0.1 - val_error * 60/(img_RGB.shape[1]/2)*0.066)
+        servo.angle(val_error * 60/(img_RGB.shape[1]/2))
+        motor.forward(0.1 - abs(val_error / (img_RGB.shape[1]/2)*0.066))
 
-        print(val_error * 60/(img_RGB.shape[1]/2))
+        #print(0.1 - abs(val_error / (img_RGB.shape[1]/2)*0.066))
 
         # Show images
-        cv2.imshow('RAW', img_RGB)
-        cv2.imshow('Depth', Depth_image_normalized)
+        #cv2.imshow('RAW', img_RGB)
+        #cv2.imshow('Depth', Depth_image_normalized)
         cv2.imshow('Orange cone', img_hxs_orange)
-        cv2.imshow('Cones', img_cones)
+        #cv2.imshow('Cones', img_cones)
         
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -64,16 +64,17 @@ try:
         orange_density = np.sum(img_hxs_orange)/(img_hxs_orange.shape[0] * img_hxs_orange.shape[0])
         
         # If current lap is about to end
-        if orange_density > 1 and (lap*2)%2 == 1:
+        if orange_density > 2 and (lap*2)%2 == 1:
             lap += 0.5
         
         # If av enters next lap
-        elif orange_density < 2 and (lap*2)%2 == 0:
+        elif orange_density < 1 and (lap*2)%2 == 0:
             lap += 0.5
         
         time_end = time.perf_counter()
 
         #print(time_end-time_start)
+        #print(lap)
 finally:
     # Stop the pipeline
     pipeline.stop()
