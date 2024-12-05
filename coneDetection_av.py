@@ -20,7 +20,7 @@ align = rs.align(rs.stream.color)
 
 try:
     lap = 0.5
-    #motor.forward(0.1)
+    motor.forward(0.1)
     while True: # lap <= 2
         time_start = time.perf_counter()
         # Wait for a coherent pair of frames
@@ -55,13 +55,13 @@ try:
         # Show images
         #cv2.imshow('RAW', img_RGB)
         #cv2.imshow('Depth', Depth_image_normalized)
-        cv2.imshow('Orange cone', img_hxs_orange)
+        #cv2.imshow('Orange cone', img_hxs_orange)
         #cv2.imshow('Cones', img_cones)
         
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-        orange_density = np.sum(img_hxs_orange)/(img_hxs_orange.shape[0] * img_hxs_orange.shape[0])
+        orange_density = np.sum(img_hxs_orange)/(img_hxs_orange.shape[0] * img_hxs_orange.shape[1])
         
         # If current lap is about to end
         if orange_density > 2 and (lap*2)%2 == 1:
@@ -79,3 +79,8 @@ finally:
     # Stop the pipeline
     pipeline.stop()
     cv2.destroyAllWindows()
+    time_brake = time.perf_counter()
+
+    # Hit the brakes for 1 second
+    while time.perf_counter() - time_brake < 1:
+        motor.forward(0)
