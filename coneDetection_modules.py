@@ -238,10 +238,10 @@ def RGB_coneDectectionC(img, img_depth=0):
     img_hxs_blue_largest = get_largest_BLOB(img_hxs_blue)
     img_hxs_yellow_largest = get_largest_BLOB(img_hxs_yellow)
 
-    img_hxs_blue, x_blue = cone_COM(img_hxs_blue, (255, 0, 0))
-    img_hxs_yellow, x_yellow = cone_COM(img_hxs_yellow, (0, 255, 255))
+    img_hxs_blue_largest, x_blue = cone_COM(img_hxs_blue_largest, (255, 0, 0))
+    img_hxs_yellow_largest, x_yellow = cone_COM(img_hxs_yellow_largest, (0, 255, 255))
 
-    img_cones = img_hxs_blue + img_hxs_yellow
+    img_cones = img_hxs_blue_largest + img_hxs_yellow_largest
 
     img_cones, val_error = get_cone_error(img_cones, x_blue, x_yellow)
 
@@ -254,7 +254,7 @@ def depth_coneDectectionA(img, img_depth):
     img_hxs_blue, img_hxs_yellow, img_hxs_orange = cone_pointProcessing(img)
 
     #img_depth_thresh = np.where(img_depth>100, 255, 0).astype(np.uint8)
-    img_depth_thresh, _ = cv2.threshold(img_depth, 75, 255, cv2.THRESH_BINARY)
+    img_depth_thresh = cv2.inRange(img_depth, 0, 75, cv2.THRESH_BINARY)
     img_hxs_blue = cv2.bitwise_and(img_hxs_blue, img_depth_thresh)
     img_hxs_yellow = cv2.bitwise_and(img_hxs_yellow, img_depth_thresh)
     img_hxs_orange = cv2.bitwise_and(img_hxs_orange, img_depth_thresh)
@@ -263,9 +263,6 @@ def depth_coneDectectionA(img, img_depth):
     img_hxs_blue = cv2.morphologyEx(img_hxs_blue, cv2.MORPH_OPEN, kernel)
     img_hxs_yellow = cv2.morphologyEx(img_hxs_yellow, cv2.MORPH_OPEN, kernel)
     img_hxs_orange = cv2.morphologyEx(img_hxs_orange, cv2.MORPH_OPEN, kernel)
-
-    #img_hxs_blue = get_largest_BLOB(img_hxs_blue)
-    #img_hxs_yellow = get_largest_BLOB(img_hxs_yellow)
 
     img_hxs_blue, x_blue = cone_rectangle_outerBound(img_hxs_blue, (255, 0, 0))
     img_hxs_yellow, x_yellow = cone_rectangle_outerBound(img_hxs_yellow, (0, 255, 255))
@@ -283,7 +280,7 @@ def depth_coneDectectionB(img, img_depth):
     img_hxs_blue, img_hxs_yellow, img_hxs_orange = cone_pointProcessing(img)
 
     #img_depth_thresh = np.where(img_depth>100, 255, 0).astype(np.uint8)
-    img_depth_thresh, _ = cv2.threshold(img_depth, 75, 255, cv2.THRESH_BINARY)
+    img_depth_thresh = cv2.inRange(img_depth, 0, 75, cv2.THRESH_BINARY)
     img_hxs_blue = cv2.bitwise_and(img_hxs_blue, img_depth_thresh)
     img_hxs_yellow = cv2.bitwise_and(img_hxs_yellow, img_depth_thresh)
     img_hxs_orange = cv2.bitwise_and(img_hxs_orange, img_depth_thresh)
@@ -292,9 +289,6 @@ def depth_coneDectectionB(img, img_depth):
     img_hxs_blue = cv2.morphologyEx(img_hxs_blue, cv2.MORPH_OPEN, kernel)
     img_hxs_yellow = cv2.morphologyEx(img_hxs_yellow, cv2.MORPH_OPEN, kernel)
     img_hxs_orange = cv2.morphologyEx(img_hxs_orange, cv2.MORPH_OPEN, kernel)
-
-    #img_hxs_blue = get_largest_BLOB(img_hxs_blue)
-    #img_hxs_yellow = get_largest_BLOB(img_hxs_yellow)
 
     img_hxs_blue, x_blue = cone_rectangle_center(img_hxs_blue, (255, 0, 0))
     img_hxs_yellow, x_yellow = cone_rectangle_center(img_hxs_yellow, (0, 255, 255))
@@ -312,7 +306,7 @@ def depth_coneDectectionC(img, img_depth):
     img_hxs_blue, img_hxs_yellow, img_hxs_orange = cone_pointProcessing(img)
 
     #img_depth_thresh = np.where(img_depth>100, 255, 0).astype(np.uint8)
-    img_depth_thresh, _ = cv2.threshold(img_depth, 75, 255, cv2.THRESH_BINARY)
+    img_depth_thresh = cv2.inRange(img_depth, 0, 75, cv2.THRESH_BINARY)
     img_hxs_blue = cv2.bitwise_and(img_hxs_blue, img_depth_thresh)
     img_hxs_yellow = cv2.bitwise_and(img_hxs_yellow, img_depth_thresh)
     img_hxs_orange = cv2.bitwise_and(img_hxs_orange, img_depth_thresh)
@@ -321,9 +315,6 @@ def depth_coneDectectionC(img, img_depth):
     img_hxs_blue = cv2.morphologyEx(img_hxs_blue, cv2.MORPH_OPEN, kernel)
     img_hxs_yellow = cv2.morphologyEx(img_hxs_yellow, cv2.MORPH_OPEN, kernel)
     img_hxs_orange = cv2.morphologyEx(img_hxs_orange, cv2.MORPH_OPEN, kernel)
-
-    #img_hxs_blue = get_largest_BLOB(img_hxs_blue)
-    #img_hxs_yellow = get_largest_BLOB(img_hxs_yellow)
 
     img_hxs_blue, x_blue = cone_COM(img_hxs_blue, (255, 0, 0))
     img_hxs_yellow, x_yellow = cone_COM(img_hxs_yellow, (0, 255, 255))

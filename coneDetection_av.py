@@ -45,7 +45,7 @@ try:
         Depth_image_normalized = np.array((Depth_image_scaled / 5000.0 * 255).astype(np.uint8))
         Depth_image_normalized = Depth_image_normalized[Depth_image_normalized.shape[0]//2:,:]
 
-        img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = RGB_coneDectectionA(img_RGB, Depth_image_normalized)
+        img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = depth_coneDectectionC(img_RGB, Depth_image_normalized)
 
         servo.angle(val_error * 60/(img_RGB.shape[1]/2))
         motor.forward(0.1 - abs(val_error / (img_RGB.shape[1]/2)*0.066))
