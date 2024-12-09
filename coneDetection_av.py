@@ -50,7 +50,13 @@ try:
         servo.angle(val_error * 60/(img_RGB.shape[1]/2))
         motor.forward(0.1 - abs(val_error / (img_RGB.shape[1]/2)*0.066))
 
-        #print(0.1 - abs(val_error / (img_RGB.shape[1]/2)*0.066))
+        # Save images taken by camera
+        clock = time.strftime("%Y%m%d_%H%M%S", time.gmtime()) + "_" + str(time.time_ns() // 1000000)[9:13]
+        folder = "images_test1/"
+        cv2.imwrite(folder + "RGB_" + clock + ".png", img_RGB)
+        cv2.imwrite(folder + "depth_" + clock + ".png", Depth_image_normalized)
+        cv2.imwrite(folder + "orange_" + clock + ".png", img_hxs_orange)
+        cv2.imwrite(folder + "cones_" + clock + ".png", img_cones)
 
         # Show images
         #cv2.imshow('RAW', img_RGB)
