@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 import time
 from G10_P3_modules import *
-from gpiozero import gpio
+import gpiozero as gpio
 
 servo = gpio.AngularServo(4)
 motor = gpio.Motor(12, 13)
@@ -43,9 +43,7 @@ try:
             continue
 
         # Convert raw RGB-images to numpy arrays with 8-bit values
-        img_BGR = np.asanyarray(color_frame.get_data())
-        img_RGB = np.zeros_like(img_BGR, dtype=np.uint8)
-        img_RGB = cv2.cvtColor(img_BGR, cv2.COLOR_BGR2RGB)
+        img_RGB = np.asanyarray(color_frame.get_data())
 
         # Convert raw depth-images to numpy arrays with 8-bit values
         img_depth_raw = np.asanyarray(depth_frame.get_data())

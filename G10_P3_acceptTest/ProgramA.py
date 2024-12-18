@@ -43,9 +43,7 @@ try:
             continue
 
         # Convert raw RGB-images to numpy arrays with 8-bit values
-        img_BGR = np.asanyarray(color_frame.get_data())
-        img_RGB = np.zeros_like(img_BGR, dtype=np.uint8)
-        img_RGB = cv2.cvtColor(img_BGR, cv2.COLOR_BGR2RGB)
+        img_RGB = np.asanyarray(color_frame.get_data())
 
         # Convert raw depth-images to numpy arrays with 8-bit values
         img_depth_raw = np.asanyarray(depth_frame.get_data())
