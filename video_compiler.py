@@ -27,10 +27,10 @@ def image_to_video_av2(image_folder, video_name, fps, filter=''):
     cv2.destroyAllWindows()
     video.release()
 
-image_to_video_av2('vidja1/image_test9', 'image_test9_RGB', 30, 'RGB')
-image_to_video_av2('vidja1/image_test9', 'image_test9_depth', 30, 'depth')
-image_to_video_av2('vidja1/image_test9', 'image_test9_cones', 30, 'cones')
-image_to_video_av2('vidja1/image_test9', 'image_test9_orange', 30, 'orange')
+image_to_video_av2('figures/image_test9', 'image_test9_RGB', 30, 'RGB')
+image_to_video_av2('figures/image_test9', 'image_test9_depth', 30, 'depth')
+image_to_video_av2('figures/image_test9', 'image_test9_cones', 30, 'cones')
+image_to_video_av2('figures/image_test9', 'image_test9_orange', 30, 'orange')
 
 clip_1 = VideoFileClip("image_test9_RGB.avi")
 clip_2 = VideoFileClip("image_test9_depth.avi")
