@@ -4,8 +4,6 @@ import time
 servo = gpio.AngularServo(4)
 motor = gpio.Motor(12, 13)
 
-
-
 IR = gpio.Button(23)
 
 LED = gpio.LED(24)
