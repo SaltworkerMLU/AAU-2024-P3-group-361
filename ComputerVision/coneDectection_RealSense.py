@@ -2,7 +2,7 @@ import pyrealsense2 as rs
 import numpy as np
 import cv2
 import time
-from ComputerVision.coneDetection_modules import *
+from coneDetection_modules import *
 
 test_ID = 'S1' # c = RGB; d = depth
 
@@ -13,8 +13,8 @@ pipeline = rs.pipeline()
 config = rs.config()
 
 # Enable depth and color streams
-config.enable_stream(rs.stream.depth, 424, 240, rs.format.z16, 90)  # Depth stream
-config.enable_stream(rs.stream.color, 424, 240, rs.format.bgr8, 60)  # Color stream
+config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)  # Depth stream
+config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)  # Color stream
 
 # Start the pipeline
 pipeline.start(config)
@@ -35,24 +35,27 @@ try:
     i = 0
     while i < 600:
         time_start = time.perf_counter()
-        # Wait for a coherent pair of frames
+                # Wait for a coherent pair of frames
         frames = pipeline.wait_for_frames()
 
-        # Get color frame
+        # Get color and depth frame
         aligned_frames = align.process(frames)
         color_frame = aligned_frames.get_color_frame()
-        Depth_frame = aligned_frames.get_depth_frame()
+        depth_frame = aligned_frames.get_depth_frame()
         if not color_frame:
             continue
 
-        # Convert images to numpy arrays
-        color_image = np.asanyarray(color_frame.get_data())
-        Depth_image = np.asanyarray(Depth_frame.get_data())
-        img_RGB = np.zeros_like(color_image, dtype=np.uint8)
-        img_RGB = cv2.cvtColor(color_image, cv2.COLOR_BGR2RGB)
+        # Convert raw RGB-images to numpy arrays with 8-bit values
+        img_RGB = np.asanyarray(color_frame.get_data())
 
-        Depth_image_scaled = np.clip(Depth_image, 0, 5000)  # Clip to 1000mm (or any max depth you expect)
-        Depth_image_normalized = np.array((Depth_image_scaled / 5000.0 * 255).astype(np.uint8))
+        # Convert raw depth-images to numpy arrays with 8-bit values
+        img_depth_raw = np.asanyarray(depth_frame.get_data())
+
+        # Clip raw depth-images depth to 5000mm
+        img_depth_raw = np.clip(img_depth_raw, 0, 5000)
+
+        # Scale depth to range of 8-bit
+        img_depth = (img_depth_raw / 5000 * 255).astype(np.uint8)
         
         #Depth_colormap = cv2.applyColorMap(Depth_image_normalized, cv2.COLORMAP_JET)
 
@@ -60,27 +63,27 @@ try:
         #time_start = time.perf_counter()
         if i < 100:
             test_ID = test_ID[0:2] + 'Ac'
-            img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = RGB_coneDectectionA(img_RGB, Depth_image_normalized)
+            img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = RGB_coneDectectionA(img_RGB, img_depth)
         elif i < 200:
             test_ID = test_ID[0:2] + 'Bc'
-            img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = RGB_coneDectectionB(img_RGB, Depth_image_normalized)
+            img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = RGB_coneDectectionB(img_RGB, img_depth)
         elif i < 300:
             test_ID = test_ID[0:2] + 'Cc'
-            img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = RGB_coneDectectionC(img_RGB, Depth_image_normalized)
+            img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = RGB_coneDectectionC(img_RGB, img_depth)
         elif i < 400:
             test_ID = test_ID[0:2] + 'Ad'
-            img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = depth_coneDectectionA(img_RGB, Depth_image_normalized)
+            img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = depth_coneDectectionA(img_RGB, img_depth)
         elif i < 500:
             test_ID = test_ID[0:2] + 'Bd'
-            img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = depth_coneDectectionB(img_RGB, Depth_image_normalized)
+            img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = depth_coneDectectionB(img_RGB, img_depth)
         elif i < 600:
             test_ID = test_ID[0:2] + 'Cd'
-            img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = depth_coneDectectionC(img_RGB, Depth_image_normalized)
+            img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = depth_coneDectectionC(img_RGB, img_depth)
         #time_end = time.perf_counter()
 
         # Show images
         cv2.imshow('RAW', img_RGB)
-        cv2.imshow('Depth', Depth_image_normalized)
+        cv2.imshow('Depth', img_depth)
         cv2.imshow('Orange cones', img_hxs_orange)
         cv2.imshow('Cones', img_cones)
         
@@ -96,7 +99,7 @@ try:
                                         str(int(1/np.average(framerate_array))) + ' fps', (0, 50), 
                                         cv2.FONT_HERSHEY_SIMPLEX, 
                                         1, (0, 255, 0), 1, cv2.LINE_AA)
-            Depth_image_normalized = cv2.putText(Depth_image_normalized, 
+            Depth_image_normalized = cv2.putText(img_depth, 
                                                     str(int(1/np.average(framerate_array))) + ' fps', (0, 50), 
                                                     cv2.FONT_HERSHEY_SIMPLEX, 
                                                     1, (0, 255, 0), 1, cv2.LINE_AA)
