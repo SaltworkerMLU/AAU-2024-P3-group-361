@@ -9,11 +9,17 @@ test_ID = 'S1' # c = RGB; d = depth
 # Create a pipeline
 pipeline = rs.pipeline()
 
-# Start the pipeline
-pipeline.start()
+# Create config object
 config = rs.config()
-config.enable_stream(rs.stream.depth, 424, 240, rs.format.z16, 90) # Max framerate for depth is 90fps
-config.enable_stream(rs.stream.color, 424, 240, rs.format.bgr8, 30) # Max framerate for RGB is 30fps
+
+# Enable depth and color streams
+config.enable_stream(rs.stream.depth, 424, 240, rs.format.z16, 90)  # Depth stream
+config.enable_stream(rs.stream.color, 424, 240, rs.format.bgr8, 60)  # Color stream
+
+# Start the pipeline
+pipeline.start(config)
+
+# Align color and depth frames
 align = rs.align(rs.stream.color)
 
 try:

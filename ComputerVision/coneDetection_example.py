@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-from ComputerVision.coneDetection_modules import *
+from coneDetection_modules import *
 
 #img = cv2.imread("av_depthset/av_track23.png") # Read image from local repository
 #img_depth = cv2.imread("av_depthset/av_track_depth23.png", cv2.IMREAD_GRAYSCALE)

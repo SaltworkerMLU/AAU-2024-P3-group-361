@@ -8,17 +8,23 @@ import time
 from G10_P3_modules import *
 from gpiozero import gpio
 
-servo = gpio.Servo(4)
-motor = gpio.Motor(13, 12)
+servo = gpio.AngularServo(4)
+motor = gpio.Motor(12, 13)
 
 # Create a pipeline
 pipeline = rs.pipeline()
 
-# Start the pipeline
-pipeline.start()
+# Create config object
 config = rs.config()
-config.enable_stream(rs.stream.depth, 424, 240, rs.format.z16, 90) # Max framerate for depth is 90fps
-config.enable_stream(rs.stream.color, 424, 240, rs.format.bgr8, 60) # Max framerate for RGB is 60fps
+
+# Enable depth and color streams
+config.enable_stream(rs.stream.depth, 424, 240, rs.format.z16, 90)  # Depth stream
+config.enable_stream(rs.stream.color, 424, 240, rs.format.bgr8, 60)  # Color stream
+
+# Start the pipeline
+pipeline.start(config)
+
+# Align color and depth frames
 align = rs.align(rs.stream.color)
 
 try:
