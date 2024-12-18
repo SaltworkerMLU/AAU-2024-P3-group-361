@@ -4,7 +4,7 @@ import cv2
 import time
 from coneDetection_modules import *
 
-test_ID = 'S1' # c = RGB; d = depth
+test_ID = '1_0' # c = RGB; d = depth
 
 # Create a pipeline
 pipeline = rs.pipeline()
@@ -12,8 +12,8 @@ pipeline = rs.pipeline()
 # Start the pipeline
 pipeline.start()
 config = rs.config()
-config.enable_stream(rs.stream.depth, 424, 240, rs.format.z16, 90) # Max framerate for depth is 90fps
-config.enable_stream(rs.stream.color, 424, 240, rs.format.bgr8, 30) # Max framerate for RGB is 30fps
+config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 90) # Max framerate for depth is 90fps
+config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30) # Max framerate for RGB is 30fps
 align = rs.align(rs.stream.color)
 
 try:
@@ -27,7 +27,10 @@ try:
         i+=1
 
     i = 0
-    while i < 600:
+    #lap = 0.5 # lap = 1 means 1st lap is complete; lap = 0.5 means 1st lap is underway
+
+    # How many laps should the av do?
+    while i < 600: # lap <= 2: # 
         time_start = time.perf_counter()
         # Wait for a coherent pair of frames
         frames = pipeline.wait_for_frames()
@@ -53,38 +56,39 @@ try:
         # Use all 6 methods one at a time
         #time_start = time.perf_counter()
         if i < 100:
-            test_ID = test_ID[0:2] + 'Ac'
+            test_ID = test_ID[0] + 'Ac'
             img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = RGB_coneDectectionA(img_RGB, Depth_image_normalized)
         elif i < 200:
-            test_ID = test_ID[0:2] + 'Bc'
+            test_ID = test_ID[0] + 'Bc'
             img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = RGB_coneDectectionB(img_RGB, Depth_image_normalized)
         elif i < 300:
-            test_ID = test_ID[0:2] + 'Cc'
+            test_ID = test_ID[0] + 'Cc'
             img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = RGB_coneDectectionC(img_RGB, Depth_image_normalized)
         elif i < 400:
-            test_ID = test_ID[0:2] + 'Ad'
+            test_ID = test_ID[0] + 'Ad'
             img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = depth_coneDectectionA(img_RGB, Depth_image_normalized)
         elif i < 500:
-            test_ID = test_ID[0:2] + 'Bd'
+            test_ID = test_ID[0] + 'Bd'
             img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = depth_coneDectectionB(img_RGB, Depth_image_normalized)
         elif i < 600:
-            test_ID = test_ID[0:2] + 'Cd'
+            test_ID = test_ID[0] + 'Cd'
             img_cones, val_error, img_hxs_blue, img_hxs_yellow, img_hxs_orange = depth_coneDectectionC(img_RGB, Depth_image_normalized)
         #time_end = time.perf_counter()
 
         # Show images
         cv2.imshow('RAW', img_RGB)
         cv2.imshow('Depth', Depth_image_normalized)
-        cv2.imshow('Orange cones', img_hxs_orange)
         cv2.imshow('Cones', img_cones)
+        cv2.imshow('Orange cone', img_hxs_orange)
         
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
         
         time_end = time.perf_counter()
 
-        # Take a screenshot at the 50th frame using said method
+        # Take a screenshot at the 100th frame using said method
         if i % 100 == 99:
+            print(len(framerate_array))
             # Put framerate spanning 50 frames on RGB-image
             img_RGB = cv2.putText(img_RGB, 
                                         str(int(1/np.average(framerate_array))) + ' fps', (0, 50), 
@@ -99,9 +103,9 @@ try:
                                     cv2.FONT_HERSHEY_SIMPLEX, 
                                     1, (0, 255, 0), 1, cv2.LINE_AA)
             img_hxs_orange = cv2.putText(img_hxs_orange, 
-                                    str(int(1/np.average(framerate_array))) + ' fps', (0, 50), 
-                                    cv2.FONT_HERSHEY_SIMPLEX, 
-                                    1, (0, 255, 0), 1, cv2.LINE_AA)
+                                        str(int(1/np.average(framerate_array))) + ' fps', (0, 50), 
+                                        cv2.FONT_HERSHEY_SIMPLEX, 
+                                        1, (0, 255, 0), 1, cv2.LINE_AA)
             # Take sceenshots
             cv2.imwrite('./av_depthset_2/av_track' + test_ID + '.png', img_RGB)
             cv2.imwrite('./av_depthset_2/av_track_depth' + test_ID + '.png', Depth_image_normalized)
@@ -110,8 +114,17 @@ try:
 
         if i % 100 == 99:
             framerate_array = np.array([])
-        i+=1
+        
+        #lap_endsection = np.sum(img_hxs_orange) / (img_hxs_orange.shape[0] * img_hxs_orange.shape[1])
 
+        # if the av has completed a lap
+        #if lap_endsection < 1 and int(lap*2)%2 == 0:
+        #    lap += 0.5
+        
+        # if the av sees the orange cones - is about to complete a lap
+        #if lap_endsection > 2 and int(lap*2)%2 == 1:
+        #    lap += 0.5
+        i+=1
         framerate_array = np.append(framerate_array, time_end-time_start)
 finally:
     # Stop the pipeline
