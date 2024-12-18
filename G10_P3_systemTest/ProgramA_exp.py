@@ -40,7 +40,7 @@ while True:
         lap = 0.5 # lap = 1 means 1st lap is complete; lap = 0.5 means 1st lap is underway
 
         # How many laps should the av do?
-        while lap <= 30:
+        while lap <= 2:
             time_start = time.perf_counter()
             # Wait for a coherent pair of frames
             frames = pipeline.wait_for_frames()
